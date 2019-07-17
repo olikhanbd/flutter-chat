@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/models/chat_model.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Chat extends StatelessWidget {
   final String peerId;
@@ -20,8 +23,10 @@ class Chat extends StatelessWidget {
         title: Text(
           peerName,
         ),
+        elevation: 0.7,
       ),
       body: ChatScreen(),
+      backgroundColor: Color(0xFFEEE7DE),
     );
   }
 }
@@ -36,7 +41,21 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController editingController = TextEditingController();
   final FocusNode focusNode = FocusNode();
 
+  var textColorBlack = Color(0xFF000000);
+  var senderBgColor = Color(0xFFFFFFFF);
+  var receiverBgColor = Color(0xFFE1FFC7);
+  var uiBgColor = Color(0xFFEEE7DE);
+
   bool isShowSticker = false;
+  List<ChatModel> chatList = List<ChatModel>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    chatList.addAll(dummyChat.reversed);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,47 +84,159 @@ class _ChatScreenState extends State<ChatScreen> {
     return Flexible(
         child: ListView.builder(
             padding: EdgeInsets.all(10.0),
-            itemCount: dummyChat.length,
+            itemCount: chatList.length,
             reverse: true,
             controller: listScrollController,
             itemBuilder: (context, index) =>
-                buildItem(index, dummyChat[index])));
+                buildItem(index, chatList[index])));
   }
 
   Widget buildItem(int index, ChatModel model) {
     if (model.sender == "me") {
       return Row(
         children: <Widget>[
-          Container(
-            child: Text(
-              model.message,
-              style: TextStyle(color: Theme.of(context).primaryColor),
-            ),
-            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-            width: 200.0,
-            decoration: BoxDecoration(
-                color: Colors.grey, borderRadius: BorderRadius.circular(8.0)),
-            margin: EdgeInsets.only(
-                bottom: isLastMessage(index) ? 20.0 : 10.0, right: 10.0),
-          )
+          chatList[index].doctype == 0
+              ? Container(
+                  child: Text(
+                    model.message,
+                    style: TextStyle(color: textColorBlack),
+                  ),
+                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                  width: 200.0,
+                  decoration: BoxDecoration(
+                      color: receiverBgColor,
+                      borderRadius: BorderRadius.circular(8.0)),
+                  margin: EdgeInsets.only(
+                      bottom: isLastMessage(index) ? 20.0 : 10.0, right: 10.0),
+                )
+              : chatList[index].doctype == 1
+
+                  // image
+                  ? Container(
+                      child: Material(
+                        child: CachedNetworkImage(
+                          imageUrl: chatList[index].message,
+                          placeholder: (context, url) => Container(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).primaryColor),
+                            ),
+                            width: 200.0,
+                            height: 200.0,
+                            padding: EdgeInsets.all(70.0),
+                            decoration: BoxDecoration(
+                                color: receiverBgColor,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0))),
+                          ),
+                          errorWidget: (context, url, error) => Material(
+                            child: Image.asset(
+                              "images/placeholder.png",
+                              width: 200.0,
+                              height: 200.0,
+                              fit: BoxFit.cover,
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                            clipBehavior: Clip.hardEdge,
+                          ),
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      margin: EdgeInsets.only(
+                          bottom: isLastMessage(index) ? 20.0 : 10.0,
+                          top: 10.0),
+                    )
+
+                  // sticker
+                  : Container(
+                      child: Image.asset(
+                        "images/${chatList[index].message}.gif",
+                        width: 100.0,
+                        height: 100.0,
+                        fit: BoxFit.cover,
+                      ),
+                      margin: EdgeInsets.only(
+                          bottom: isLastMessage(index) ? 20.0 : 10.0,
+                          top: 10.0),
+                    )
         ],
         mainAxisAlignment: MainAxisAlignment.end,
       );
     } else {
       return Row(
         children: <Widget>[
-          Container(
-            child: Text(
-              model.message,
-              style: TextStyle(color: Colors.white),
-            ),
-            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-            width: 200.0,
-            decoration: BoxDecoration(
-                color: Colors.green, borderRadius: BorderRadius.circular(8.0)),
-            margin: EdgeInsets.only(
-                bottom: isLastMessage(index) ? 20.0 : 10.0, right: 10.0),
-          )
+          chatList[index].doctype == 0
+              ? Container(
+                  child: Text(
+                    model.message,
+                    style: TextStyle(color: textColorBlack),
+                  ),
+                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                  width: 200.0,
+                  decoration: BoxDecoration(
+                      color: senderBgColor,
+                      borderRadius: BorderRadius.circular(8.0)),
+                  margin: EdgeInsets.only(
+                      bottom: isLastMessage(index) ? 20.0 : 10.0, right: 10.0),
+                )
+              : chatList[index].doctype == 1
+
+                  //image
+                  ? Container(
+                      child: Material(
+                        child: CachedNetworkImage(
+                          imageUrl: chatList[index].message,
+                          placeholder: (context, url) => Container(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).primaryColor),
+                            ),
+                            width: 200.0,
+                            height: 200.0,
+                            padding: EdgeInsets.all(70.0),
+                            decoration: BoxDecoration(
+                                color: senderBgColor,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0))),
+                          ),
+                          errorWidget: (context, url, error) => Material(
+                            child: Image.asset(
+                              "images/placeholder.png",
+                              width: 200.0,
+                              height: 200.0,
+                              fit: BoxFit.cover,
+                            ),
+                            clipBehavior: Clip.hardEdge,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                          ),
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      margin: EdgeInsets.only(
+                          bottom: isLastMessage(index) ? 20.0 : 10.0,
+                          top: 10.0),
+                    )
+
+                  //sticker
+                  : Container(
+                      child: Image.asset(
+                        "images/${chatList[index].message}.gif",
+                        width: 100.0,
+                        height: 100.0,
+                        fit: BoxFit.cover,
+                      ),
+                      margin: EdgeInsets.only(
+                          bottom: isLastMessage(index) ? 20.0 : 10.0,
+                          top: 10.0),
+                    )
         ],
       );
     }
@@ -124,7 +255,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Icons.image,
                   ),
                   color: Theme.of(context).primaryColor,
-                  onPressed: () {}),
+                  onPressed: getImage),
             ),
             color: Colors.white,
           ),
@@ -163,7 +294,9 @@ class _ChatScreenState extends State<ChatScreen> {
               child: IconButton(
                   icon: Icon(Icons.send),
                   color: Theme.of(context).primaryColor,
-                  onPressed: () {}),
+                  onPressed: () {
+                    onSendMessage(editingController.text, 0);
+                  }),
               color: Colors.white,
             ),
           )
@@ -184,7 +317,9 @@ class _ChatScreenState extends State<ChatScreen> {
           Row(
             children: <Widget>[
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi1", 2);
+                },
                 child: Image.asset(
                   "images/mimi1.gif",
                   width: 50.0,
@@ -193,7 +328,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi2", 2);
+                },
                 child: Image.asset(
                   "images/mimi2.gif",
                   width: 50.0,
@@ -202,7 +339,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi3", 2);
+                },
                 child: Image.asset(
                   "images/mimi3.gif",
                   width: 50.0,
@@ -216,7 +355,9 @@ class _ChatScreenState extends State<ChatScreen> {
           Row(
             children: <Widget>[
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi4", 2);
+                },
                 child: Image.asset(
                   "images/mimi4.gif",
                   width: 50.0,
@@ -225,7 +366,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi5", 2);
+                },
                 child: Image.asset(
                   "images/mimi5.gif",
                   width: 50.0,
@@ -234,7 +377,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi6", 2);
+                },
                 child: Image.asset(
                   "images/mimi6.gif",
                   width: 50.0,
@@ -248,7 +393,9 @@ class _ChatScreenState extends State<ChatScreen> {
           Row(
             children: <Widget>[
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi7", 2);
+                },
                 child: Image.asset(
                   "images/mimi7.gif",
                   width: 50.0,
@@ -257,7 +404,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi8", 2);
+                },
                 child: Image.asset(
                   "images/mimi8.gif",
                   width: 50.0,
@@ -266,7 +415,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               FlatButton(
-                onPressed: () {},
+                onPressed: () {
+                  onSendMessage("mimi9", 2);
+                },
                 child: Image.asset(
                   "images/mimi9.gif",
                   width: 50.0,
@@ -300,7 +451,27 @@ class _ChatScreenState extends State<ChatScreen> {
     return Future.value(false);
   }
 
+  void onSendMessage(String content, int doctype) {
+    if (content.trim() != '') editingController.clear();
+
+    setState(() {
+      chatList.insert(0, ChatModel(content, "12:05", "me", "you", doctype));
+    });
+  }
+
+  Future getImage() async {
+    debugPrint("inside getImage");
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      String path = image.path;
+      debugPrint("path $path");
+      onSendMessage(path, 1);
+    }
+  }
+
   void getSticker() {
+    debugPrint("inside getSticker");
     //hide keyboard
     focusNode.unfocus();
 
@@ -310,7 +481,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   bool isLastMessage(int index) {
-    return dummyChat.length - 1 == index;
+    return chatList.length - 1 == index;
   }
 
   void exitScreen() {

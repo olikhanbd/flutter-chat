@@ -19,6 +19,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cached_network_image: ^1.1.0
+  image_picker: ^0.6.0+17
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -51,6 +53,7 @@ flutter:
     - images/mimi7.gif
     - images/mimi8.gif
     - images/mimi9.gif
+    - images/placeholder.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
