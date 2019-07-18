@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/screens/flutter_chat_home.dart';
+import 'package:flutter_chat/screens/auth_screen.dart';
 
 void main() => runApp(ChatApp());
 
@@ -13,7 +14,7 @@ class ChatApp extends StatelessWidget {
         primaryColor: Color(0xff075e54),
         accentColor: Color(0xff25d366)
       ),
-      home: FlutterChatHome(),
+      home: AuthScreen(),
     );
   }
 }
