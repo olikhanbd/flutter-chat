@@ -9,6 +9,9 @@ class _AuthScreenState extends State<AuthScreen> {
   String appBarTitle = "Login";
   bool isLogin = true;
 
+  final String loginLogo = "images/placeholder.png";
+  final String regLogo = "images/placeholder.png";
+
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -26,74 +29,35 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget buildLogin() {
-    return Container(
-      child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: EdgeInsets.all(10.0),
-            child: ListView(
-              children: <Widget>[
-                ///////////////////EMAIL INPUT//////////////////////////////////
-                Container(
-                    margin: EdgeInsets.only(bottom: 10.0),
-                    child: TextFormField(
-                      controller: emailController,
-                      validator: (String value) {
-                        if (value.isEmpty)
-                          return "Please enter a valid email address";
-                      },
-                      keyboardType: TextInputType.emailAddress,
-                      style: TextStyle(fontSize: 15.0),
-                      decoration: InputDecoration(
-                          labelText: "Email",
-                          labelStyle:
-                              TextStyle(fontSize: 15.0, color: Colors.grey),
-                          errorStyle:
-                              TextStyle(color: Colors.red, fontSize: 15.0),
-                          border: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor,
-                                  width: 1.0))),
-                    )),
-
-                /////////////////////////PASSWORD INPUT/////////////////////////
-                Container(
-                    margin: EdgeInsets.only(bottom: 10.0),
-                    child: TextFormField(
-                      controller: passwordController,
-                      validator: (String value) {
-                        if (value.isEmpty)
-                          return "Please enter a valid password";
-                      },
-                      style: TextStyle(fontSize: 15.0),
-                      obscureText: true,
-                      decoration: InputDecoration(
-                          labelText: "Password",
-                          labelStyle:
-                              TextStyle(fontSize: 15.0, color: Colors.grey),
-                          errorStyle:
-                              TextStyle(color: Colors.red, fontSize: 15.0),
-                          border: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Theme.of(context).primaryColor,
-                                  width: 1.0))),
-                    )),
-
-                /////////////////////////SUBMIT BUTTON//////////////////////////
-                Container(
-                    margin: EdgeInsets.only(top: 20.0, bottom: 10.0),
-                    child: RaisedButton(
-                      color: Theme.of(context).primaryColor,
-                      elevation: 0.7,
-                      child: Text(
-                        "Submit",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {},
-                    ))
-              ],
+    return SingleChildScrollView(
+      child: Column(
+        children: <Widget>[
+          Image.asset(loginLogo),
+          Text("Login".toUpperCase()),
+          TextField(
+            decoration: InputDecoration(
+              hintText: "enter your email",
             ),
-          )),
+          ),
+          RaisedButton(
+            child: Text("Login".toUpperCase()),
+            onPressed: (){},
+          ),
+          Row(
+            children: <Widget>[
+              FlatButton(
+                child: Text("create account".toLowerCase()),
+                onPressed: (){},
+              ),
+              VerticalDivider(),
+              FlatButton(
+                child: Text("Forgot password".toLowerCase()),
+                onPressed: (){},
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 
