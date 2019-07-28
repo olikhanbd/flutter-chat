@@ -29,36 +29,75 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget buildLogin() {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          Image.asset(loginLogo),
-          Text("Login".toUpperCase()),
-          TextField(
-            decoration: InputDecoration(
-              hintText: "enter your email",
-            ),
-          ),
-          RaisedButton(
-            child: Text("Login".toUpperCase()),
-            onPressed: (){},
-          ),
-          Row(
-            children: <Widget>[
-              FlatButton(
-                child: Text("create account".toLowerCase()),
-                onPressed: (){},
+    return SafeArea(
+        child: Container(
+            height: double.infinity,
+            decoration: BoxDecoration(
+                gradient:
+                    LinearGradient(colors: [Colors.lightGreen, Colors.green])),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                children: <Widget>[
+                  Container(
+                      margin: EdgeInsets.only(top: 40.0, bottom: 20.0),
+                      height: 80,
+                      child: Image.asset(loginLogo)),
+                  Text(
+                    "Login".toUpperCase(),
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.all(16.0),
+                        prefixIcon: Container(
+                          padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
+                          margin: EdgeInsets.only(right: 8.0),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(30.0),
+                                  topRight: Radius.circular(30.0),
+                                  bottomLeft: Radius.circular(30.0),
+                                  bottomRight: Radius.circular(10.0))),
+                          child: Icon(Icons.person),
+                        ),
+                        hintText: "enter your email",
+                        hintStyle: TextStyle(
+                          color: Colors.white54,
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide.none),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.1)),
+                  ),
+                  RaisedButton(
+                    child: Text("Login".toUpperCase()),
+                    onPressed: () {},
+                  ),
+                  Row(
+                    children: <Widget>[
+                      FlatButton(
+                        child: Text("create account".toLowerCase()),
+                        onPressed: () {},
+                      ),
+                      VerticalDivider(),
+                      FlatButton(
+                        child: Text("Forgot password".toLowerCase()),
+                        onPressed: () {},
+                      )
+                    ],
+                  )
+                ],
               ),
-              VerticalDivider(),
-              FlatButton(
-                child: Text("Forgot password".toLowerCase()),
-                onPressed: (){},
-              )
-            ],
-          )
-        ],
-      ),
-    );
+            )));
   }
 
   Widget buildRegistration() {
