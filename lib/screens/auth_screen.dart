@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/screens/flutter_chat_home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_chat/services/user_management.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -16,6 +19,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController regNameController = TextEditingController();
+  TextEditingController regEmailController = TextEditingController();
+  TextEditingController regPasswordController = TextEditingController();
 
   var _loginFormKey = GlobalKey<FormState>();
   var _regFormKey = GlobalKey<FormState>();
@@ -70,10 +76,12 @@ class _AuthScreenState extends State<AuthScreen> {
       child: Column(
         children: <Widget>[
           TextFormField(
+            controller: emailController,
             validator: (input) {
               if (input.isEmpty) {
                 return "Please enter a valid email";
               }
+              return null;
             },
             decoration: InputDecoration(
               contentPadding: EdgeInsets.all(16.0),
@@ -105,10 +113,12 @@ class _AuthScreenState extends State<AuthScreen> {
             height: 16.0,
           ),
           TextFormField(
+            controller: passwordController,
             validator: (input) {
               if (input.isEmpty) {
                 return "Please enter a valid password";
               }
+              return null;
             },
             decoration: InputDecoration(
               contentPadding: EdgeInsets.all(16.0),
@@ -148,7 +158,10 @@ class _AuthScreenState extends State<AuthScreen> {
                 padding: EdgeInsets.all(20.0),
                 child: Text("Login".toUpperCase()),
                 onPressed: () {
-                  if (_loginFormKey.currentState.validate()) {}
+                  if (_loginFormKey.currentState.validate()) {
+                    signInWithEmailAndPass(
+                        emailController.text, passwordController.text);
+                  }
                 },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0)),
@@ -212,10 +225,12 @@ class _AuthScreenState extends State<AuthScreen> {
       child: Column(
         children: <Widget>[
           TextFormField(
+            controller: regNameController,
             validator: (input) {
               if (input.isEmpty) {
                 return "Please enter a valid name";
               }
+              return null;
             },
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(16.0),
@@ -245,10 +260,12 @@ class _AuthScreenState extends State<AuthScreen> {
             height: 10.0,
           ),
           TextFormField(
+            controller: regEmailController,
             validator: (input) {
               if (input.isEmpty) {
                 return "Please enter a valid email";
               }
+              return null;
             },
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(16.0),
@@ -278,10 +295,12 @@ class _AuthScreenState extends State<AuthScreen> {
             height: 10.0,
           ),
           TextFormField(
+            controller: regPasswordController,
             validator: (input) {
               if (input.isEmpty) {
                 return "Please enter a valid password";
               }
+              return null;
             },
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(16.0),
@@ -321,12 +340,39 @@ class _AuthScreenState extends State<AuthScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0)),
                 onPressed: () {
-                  if (_regFormKey.currentState.validate()) {}
+                  if (_regFormKey.currentState.validate()) {
+                    createUserWithEmailAndPass(regNameController.text,
+                        regEmailController.text, regPasswordController.text);
+                  }
                 }),
           )
         ],
       ),
     );
+  }
+
+  void signInWithEmailAndPass(email, pass) {
+    print("email: " + email + " pass: " + pass);
+    FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: pass)
+        .then((user) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return FlutterChatHome();
+      }));
+    }).catchError((e) {
+      print(e);
+    });
+  }
+
+  void createUserWithEmailAndPass(name, email, pass) {
+    print("email: " + email + " name: " + name + " pass: " + pass);
+    FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: pass)
+        .then((signedInUser) {
+      UserManagement().storeNewUser(context, signedInUser.user, name);
+    }).catchError((e) {
+      print(e);
+    });
   }
 
   void gotoRegistration() {
@@ -346,6 +392,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<bool> onBackPress() {
     if (!isLogin) {
       gotoLogin();
+      return null;
     } else {
       return Future.value(true);
     }

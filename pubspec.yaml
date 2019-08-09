@@ -17,6 +17,11 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+
+  cloud_firestore:
+
+  firebase_auth:
+
   flutter:
     sdk: flutter
   cached_network_image: ^1.1.0
