@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_chat/screens/flutter_chat_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chat/services/user_management.dart';
+import 'package:flutter_chat/utils/app_constants.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final String regLogo = "images/placeholder.png";
   final String googleLogo = "images/google_logo.png";
   final String flutterLogo = "images/flutter_logo.png";
+  final String appLogo = "images/chat.png";
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -26,14 +29,19 @@ class _AuthScreenState extends State<AuthScreen> {
   var _loginFormKey = GlobalKey<FormState>();
   var _regFormKey = GlobalKey<FormState>();
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEEE7DE),
       resizeToAvoidBottomPadding: false,
-      body: WillPopScope(
-        child: buildView(),
-        onWillPop: onBackPress,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(statusBarColor: Color(0xFF1B5E20)),
+        child: WillPopScope(
+          child: buildView(),
+          onWillPop: onBackPress,
+        ),
       ),
     );
   }
@@ -51,7 +59,7 @@ class _AuthScreenState extends State<AuthScreen> {
             Container(
               margin: EdgeInsets.only(top: 40.0, bottom: 20.0),
               height: 80.0,
-              child: Image.asset(flutterLogo),
+              child: Image.asset(appLogo),
             ),
             Text(
               appBarTitle.toUpperCase(),
@@ -189,7 +197,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     )
                   ],
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  _handleSignIn().then((user) {
+                    UserManagement()
+                        .storeNewUser(context, user, user.displayName);
+                  }).catchError((e) {
+                    print(e);
+                  });
+                },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0)),
               )),
@@ -356,12 +371,26 @@ class _AuthScreenState extends State<AuthScreen> {
     FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: pass)
         .then((user) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return FlutterChatHome();
-      }));
+      Navigator.pushNamed(context, AppConstants.ROUTEHOME);
     }).catchError((e) {
       print(e);
     });
+  }
+
+  Future<FirebaseUser> _handleSignIn() async {
+    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final FirebaseUser user =
+        (await _auth.signInWithCredential(credential)).user;
+    print("signed in " + user.displayName);
+    return user;
   }
 
   void createUserWithEmailAndPass(name, email, pass) {

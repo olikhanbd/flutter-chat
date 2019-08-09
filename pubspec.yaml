@@ -19,8 +19,8 @@ environment:
 dependencies:
 
   cloud_firestore:
-
   firebase_auth:
+  google_sign_in:
 
   flutter:
     sdk: flutter
@@ -61,6 +61,7 @@ flutter:
     - images/placeholder.png
     - images/google_logo.png
     - images/flutter_logo.png
+    - images/chat.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

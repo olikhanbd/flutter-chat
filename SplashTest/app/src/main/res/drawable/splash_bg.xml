@@ -5,8 +5,8 @@
         <shape android:shape="rectangle">
             <gradient
                 android:angle="0"
-                android:startColor="#FF8BC34A"
-                android:endColor="#FF4CAF50"/>
+                android:startColor="#FF43A047"
+                android:endColor="#FF33691E"/>
         </shape>
     </item>
 
@@ -14,6 +14,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/chat" />
+            android:src="@drawable/chat"
+            />
     </item>
 </layer-list>
