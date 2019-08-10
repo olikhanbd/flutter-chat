@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat/models/user.dart';
 import 'package:flutter_chat/services/shared_prefs_manager.dart';
+import 'package:flutter_chat/utils/app_constants.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'flutter_chat_home.dart';
@@ -461,7 +462,9 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future getUser(String uid) async {
-    var document = await Firestore.instance.collection("users").document(uid);
+    var document = Firestore.instance
+        .collection(AppConstants.USERCOLLECTION_REF)
+        .document(uid);
 
     document.get().then((DocumentSnapshot userDoc) {
       User user = User.fromJson(userDoc.data);

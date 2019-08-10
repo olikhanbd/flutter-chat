@@ -10,7 +10,7 @@ class ChatApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "Flutter Chat",
       theme: ThemeData(
-          primaryColor: Color(0xff075e54), accentColor: Color(0xff25d366)),
+          primaryColor: Colors.green, accentColor: Color(0xff25d366)),
       initialRoute: '/',
       onGenerateRoute: RouteGenerator.generateRoute,
     );

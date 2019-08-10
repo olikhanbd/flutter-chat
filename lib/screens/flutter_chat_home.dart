@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/screens/status_screen.dart';
+import 'package:flutter_chat/screens/users_screen.dart';
 import 'package:flutter_chat/services/shared_prefs_manager.dart';
 import 'package:flutter_chat/utils/app_constants.dart';
 
 import 'auth_screen.dart';
-import 'calls_screen.dart';
 import 'camera_screen.dart';
 import 'chatlist_screen.dart';
 
@@ -17,12 +16,25 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
 
+  SharedPrefsManager spManager = SharedPrefsManager();
+  String imgUrl =
+      "https://www.syfy.com/sites/syfy/files/styles/1200x680/public/2019/03/iron_man_vr.jpg";
+
   @override
   void initState() {
-    // TODO: implement initState
+    spManager.getUser().then((user) {
+      if (user != null) {
+        setState(() {
+          imgUrl = user.imageUrl;
+        });
+      }
+    }).catchError((e) {
+      print(e);
+    });
+
     super.initState();
 
-    _tabController = TabController(length: 4, vsync: this, initialIndex: 1);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
   }
 
   @override
@@ -36,15 +48,16 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
             indicatorColor: Colors.white,
             tabs: <Widget>[
               Tab(
-                icon: Icon(Icons.camera_alt),
+                icon: CircleAvatar(
+                  foregroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: Colors.grey,
+                  backgroundImage: NetworkImage(imgUrl),
+                ),
               ),
               Tab(
                 text: "CHATS",
               ),
-              Tab(text: "STATUS"),
-              Tab(
-                text: "CALLS",
-              )
+              Tab(text: "USERS"),
             ]),
         actions: <Widget>[
           Icon(Icons.search),
@@ -66,8 +79,7 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
         children: <Widget>[
           CameraScreen(),
           ChatListScreen(),
-          StatusScreen(),
-          CallsScreen()
+          UsersScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(

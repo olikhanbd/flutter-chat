@@ -7,8 +7,10 @@ class AppConstants {
   static const String ROUTEHOME = "/home";
   static const String ROUTEAUTH = "/auth";
 
-  //////////////////////////////////HOME MENU ITEMS//////////////////////////////////
-  static const String MENU_SIGNOUT = "Log out";
+  ////////////////////////////////////FIRESTORE REFS////////////////////////////
+  static const String USERCOLLECTION_REF = "users";
 
+  //////////////////////////////////HOME MENU ITEMS/////////////////////////////
+  static const String MENU_SIGNOUT = "Log out";
   static const List<String> homeMenuList = <String>[MENU_SIGNOUT];
 }
