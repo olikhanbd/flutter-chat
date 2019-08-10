@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_chat/services/user_management.dart';
-import 'package:flutter_chat/utils/app_constants.dart';
+import 'package:flutter_chat/models/user.dart';
+import 'package:flutter_chat/services/shared_prefs_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import 'flutter_chat_home.dart';
+import 'loading_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -13,6 +17,9 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   String appBarTitle = "Login";
   bool isLogin = true;
+  bool isLoading = false;
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final String loginLogo = "images/placeholder.png";
   final String regLogo = "images/placeholder.png";
@@ -35,6 +42,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       resizeToAvoidBottomPadding: false,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(statusBarColor: Color(0xFF1B5E20)),
@@ -47,34 +55,37 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget buildView() {
-    return SafeArea(
-      child: Container(
-        height: double.infinity,
-        padding: EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.lightGreen, Colors.green]),
-        ),
-        child: Column(
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(top: 40.0, bottom: 20.0),
-              height: 80.0,
-              child: Image.asset(appLogo),
-            ),
-            Text(
-              appBarTitle.toUpperCase(),
-              style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            isLogin ? buildLogin() : buildRegistration()
-          ],
+    return LoadingScreen(
+      child: SafeArea(
+        child: Container(
+          height: double.infinity,
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [Colors.lightGreen, Colors.green]),
+          ),
+          child: Column(
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(top: 40.0, bottom: 20.0),
+                height: 80.0,
+                child: Image.asset(appLogo),
+              ),
+              Text(
+                appBarTitle.toUpperCase(),
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              isLogin ? buildLogin() : buildRegistration()
+            ],
+          ),
         ),
       ),
+      inAsyncCall: isLoading,
     );
   }
 
@@ -199,10 +210,12 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 onPressed: () {
                   _handleSignIn().then((user) {
-                    UserManagement()
-                        .storeNewUser(context, user, user.displayName);
+                    _changeLoadingVisible();
+                    storeNewUser(user, user.displayName);
                   }).catchError((e) {
+                    _changeLoadingVisible();
                     print(e);
+                    _showSnackBar(e.message);
                   });
                 },
                 shape: RoundedRectangleBorder(
@@ -368,12 +381,26 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void signInWithEmailAndPass(email, pass) {
     print("email: " + email + " pass: " + pass);
+    _changeLoadingVisible();
     FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: pass)
-        .then((user) {
-      Navigator.pushNamed(context, AppConstants.ROUTEHOME);
+        .then((signedInuser) {
+      _changeLoadingVisible();
+
+      getUser(signedInuser.user.uid).then((_) {
+        //navigate to homepage
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return FlutterChatHome();
+        }));
+      }).catchError((e) {
+        print(e);
+        _showSnackBar(e.message);
+      });
     }).catchError((e) {
+      _changeLoadingVisible();
       print(e);
+      _showSnackBar(e.message);
     });
   }
 
@@ -394,13 +421,55 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void createUserWithEmailAndPass(name, email, pass) {
+    _changeLoadingVisible();
     print("email: " + email + " name: " + name + " pass: " + pass);
     FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: pass)
         .then((signedInUser) {
-      UserManagement().storeNewUser(context, signedInUser.user, name);
+      storeNewUser(signedInUser.user, name);
+    }).catchError((e) {
+      _changeLoadingVisible();
+      print(e);
+      _showSnackBar(e.message);
+    });
+  }
+
+  void storeNewUser(FirebaseUser user, name) {
+    Firestore.instance.collection("/users").document(user.uid).setData({
+      "name": name,
+      "uid": user.uid,
+      "email": user.email,
+      "imageUrl": user.photoUrl
+    }).then((value) {
+      _changeLoadingVisible();
+
+      getUser(user.uid).then((_) {
+        //navigate to homepage
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return FlutterChatHome();
+        }));
+      }).catchError((e) {
+        print(e);
+        _showSnackBar(e.message);
+      });
+    }).catchError((e) {
+      _changeLoadingVisible();
+      print(e);
+      _showSnackBar(e.message);
+    });
+  }
+
+  Future getUser(String uid) async {
+    var document = await Firestore.instance.collection("users").document(uid);
+
+    document.get().then((DocumentSnapshot userDoc) {
+      User user = User.fromJson(userDoc.data);
+      SharedPrefsManager spManager = new SharedPrefsManager();
+      spManager.setUser(user);
     }).catchError((e) {
       print(e);
+      _showSnackBar(e.message);
     });
   }
 
@@ -416,6 +485,19 @@ class _AuthScreenState extends State<AuthScreen> {
       appBarTitle = "Login";
       isLogin = true;
     });
+  }
+
+  Future<void> _changeLoadingVisible() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 
   Future<bool> onBackPress() {
