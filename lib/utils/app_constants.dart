@@ -9,6 +9,8 @@ class AppConstants {
 
   ////////////////////////////////////FIRESTORE REFS////////////////////////////
   static const String USERCOLLECTION_REF = "users";
+  static const String CHATROOMCOLLECTION_REF = "chatrooms";
+  static const String MSGCOLLECTION_REF = "messages";
 
   //////////////////////////////////HOME MENU ITEMS/////////////////////////////
   static const String MENU_SIGNOUT = "Log out";

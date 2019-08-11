@@ -10,9 +10,9 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
+
   final String placeholderImage = "images/placeholder.png";
 
-  //List<User> userList = List();
   var userSnapshot;
 
   @override
@@ -69,7 +69,7 @@ class _UsersScreenState extends State<UsersScreen> {
               onTap: () {
                 navigateToChat(
                     context,
-                    "id",
+                    snapshot.data.documents[i].data["uid"],
                     snapshot.data.documents[i].data["name"],
                     snapshot.data.documents[i].data["imageUrl"]);
               },
