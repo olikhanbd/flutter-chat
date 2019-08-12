@@ -15,7 +15,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   var user;
   var chatRoomsSnapshot;
 
-  var placeholder = "images/placeholder.png";
+  var placeholderImage = "images/user.png";
 
   @override
   void initState() {
@@ -37,74 +37,98 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return StreamBuilder(
       stream: chatRoomsSnapshot,
       builder: (context, snapshot) {
-        return ListView.builder(
-            itemCount:
-                (snapshot.data == null) ? 0 : snapshot.data.documents.length,
-            itemBuilder: (context, i) =>
-                buildItem(context, snapshot.data.documents[i]));
+        return (snapshot.data != null)
+            ? ListView.builder(
+                itemCount: (snapshot.data == null)
+                    ? 0
+                    : snapshot.data.documents.length,
+                itemBuilder: (context, i) =>
+                    buildItem(context, snapshot.data.documents[i]))
+            : Container();
       },
     );
   }
 
   Widget buildItem(context, document) {
-    return Column(
-      children: <Widget>[
-        Divider(
-          height: 10.0,
-        ),
-        ListTile(
-          leading: (document.data["participents"][0] == user.uid)
-              ? CircleAvatar(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  backgroundColor: Colors.grey,
-                  backgroundImage: NetworkImage(
-                      document.data["participents"][5] ?? placeholder),
-                )
-              : CircleAvatar(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  backgroundColor: Colors.grey,
-                  child: CachedNetworkImage(
-                    imageUrl: document.data["participents"][2] ?? placeholder,
+    print("doc: timestamp   ${document.data["timestamp"]}");
+    print("doc: lastmsg ${document.data["lastmsg"]}");
+    return (document.data != null)
+        ? Column(
+            children: <Widget>[
+              Divider(
+                height: 10.0,
+              ),
+              ListTile(
+                leading: (document.data["participents"][0] == user.uid)
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: document.data["participents"][5] ?? "",
+                          placeholder: (context, url) => Image.asset(
+                            placeholderImage,
+                            fit: BoxFit.cover,
+                          ),
+                          errorWidget: (context, url, error) => Image.asset(
+                            placeholderImage,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    : ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: document.data["participents"][2] ?? "",
+                          placeholder: (context, url) => Image.asset(
+                            placeholderImage,
+                            fit: BoxFit.cover,
+                          ),
+                          errorWidget: (context, url, error) => Image.asset(
+                            placeholderImage,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      (document.data["participents"][0] == user.uid)
+                          ? document.data["participents"][4]
+                          : document.data["participents"][1],
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      DateFormat.MMMd().format(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              (document.data["timestamp"] == null)
+                                  ? 0
+                                  : document.data["timestamp"]
+                                      .millisecondsSinceEpoch)),
+                      style: TextStyle(color: Colors.grey, fontSize: 14.0),
+                    ),
+                  ],
+                ),
+                subtitle: Container(
+                  padding: EdgeInsets.only(top: 5.0),
+                  child: Text(
+                    document.data["lastmsg"],
+                    style: TextStyle(color: Colors.grey, fontSize: 15.0),
                   ),
                 ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                (document.data["participents"][0] == user.uid)
-                    ? document.data["participents"][4]
-                    : document.data["participents"][1],
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                DateFormat.MMMd().format(DateTime.fromMillisecondsSinceEpoch(
-                    document.data["timestamp"].millisecondsSinceEpoch)),
-                style: TextStyle(color: Colors.grey, fontSize: 14.0),
-              ),
+                onTap: () {
+                  var id = (document.data["participents"][0] == user.uid)
+                      ? document.data["participents"][3]
+                      : document.data["participents"][0];
+                  var name = (document.data["participents"][0] == user.uid)
+                      ? document.data["participents"][4]
+                      : document.data["participents"][1];
+                  var imageUrl = (document.data["participents"][0] == user.uid)
+                      ? document.data["participents"][5]
+                      : document.data["participents"][2];
+                  navigateToChat(context, id, name, imageUrl);
+                },
+              )
             ],
-          ),
-          subtitle: Container(
-            padding: EdgeInsets.only(top: 5.0),
-            child: Text(
-              document.data["lastmsg"],
-              style: TextStyle(color: Colors.grey, fontSize: 15.0),
-            ),
-          ),
-          onTap: () {
-            var id = (document.data["participents"][0] == user.uid)
-                ? document.data["participents"][3]
-                : document.data["participents"][0];
-            var name = (document.data["participents"][0] == user.uid)
-                ? document.data["participents"][4]
-                : document.data["participents"][1];
-            var imageUrl = (document.data["participents"][0] == user.uid)
-                ? document.data["participents"][5]
-                : document.data["participents"][2];
-            navigateToChat(context, id, name, imageUrl);
-          },
-        )
-      ],
-    );
+          )
+        : Container();
   }
 
   void navigateToChat(

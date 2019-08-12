@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/services/network_service.dart';
 
@@ -10,8 +11,7 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
-
-  final String placeholderImage = "images/placeholder.png";
+  final String placeholderImage = "images/user.png";
 
   var userSnapshot;
 
@@ -43,18 +43,18 @@ class _UsersScreenState extends State<UsersScreen> {
               height: 10.0,
             ),
             ListTile(
-              leading: snapshot.data.documents[i].data['imageUrl'] == null
-                  ? CircleAvatar(
-                      foregroundColor: Theme.of(context).primaryColor,
-                      backgroundColor: Colors.grey,
-                      backgroundImage: AssetImage(placeholderImage),
-                    )
-                  : CircleAvatar(
-                      foregroundColor: Theme.of(context).primaryColor,
-                      backgroundColor: Colors.grey,
-                      backgroundImage: NetworkImage(
-                          snapshot.data.documents[i].data["imageUrl"]),
-                    ),
+              leading: ClipOval(
+                  child: CachedNetworkImage(
+                imageUrl: snapshot.data.documents[i].data["imageUrl"] ?? "",
+                placeholder: (context, url) => Image.asset(
+                  placeholderImage,
+                  fit: BoxFit.cover,
+                ),
+                errorWidget: (context, url, error) => Image.asset(
+                  placeholderImage,
+                  fit: BoxFit.cover,
+                ),
+              )),
               title: Text(
                 snapshot.data.documents[i].data["name"],
                 style: TextStyle(fontWeight: FontWeight.bold),

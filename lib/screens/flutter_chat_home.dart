@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/screens/users_screen.dart';
 import 'package:flutter_chat/services/shared_prefs_manager.dart';
@@ -17,8 +18,8 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
   TabController _tabController;
 
   SharedPrefsManager spManager = SharedPrefsManager();
-  String imgUrl =
-      "https://www.syfy.com/sites/syfy/files/styles/1200x680/public/2019/03/iron_man_vr.jpg";
+  String imgUrl = "";
+  String placeHolder = "images/user.png";
 
   @override
   void initState() {
@@ -48,10 +49,20 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
             indicatorColor: Colors.white,
             tabs: <Widget>[
               Tab(
-                icon: CircleAvatar(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  backgroundColor: Colors.grey,
-                  backgroundImage: NetworkImage(imgUrl),
+                icon: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: imgUrl,
+                    placeholder: (context, url) => Image.asset(
+                      placeHolder,
+                      fit: BoxFit.cover,
+                    ),
+                    errorWidget: (context, url, error) => CircleAvatar(
+                      child: Image.asset(
+                        placeHolder,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               Tab(
