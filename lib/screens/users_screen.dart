@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/models/user.dart';
 import 'package:flutter_chat/services/network_service.dart';
 
 import 'chat_screen.dart';
@@ -68,10 +69,7 @@ class _UsersScreenState extends State<UsersScreen> {
               ),
               onTap: () {
                 navigateToChat(
-                    context,
-                    snapshot.data.documents[i].data["uid"],
-                    snapshot.data.documents[i].data["name"],
-                    snapshot.data.documents[i].data["imageUrl"]);
+                    context, User.fromJson(snapshot.data.documents[i].data));
               },
             )
           ],
@@ -86,10 +84,9 @@ class _UsersScreenState extends State<UsersScreen> {
     return _getUserStream();
   }
 
-  void navigateToChat(
-      BuildContext context, String peerId, String peerName, String avatarUrl) {
+  void navigateToChat(BuildContext context, User user) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return Chat(peerId: peerId, peerName: peerName, avatarUrl: avatarUrl);
+      return Chat(peer: user);
     }));
   }
 }

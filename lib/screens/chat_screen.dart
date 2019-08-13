@@ -3,36 +3,28 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/models/user.dart';
 import 'package:flutter_chat/services/network_service.dart';
 import 'package:flutter_chat/services/shared_prefs_manager.dart';
 import 'package:flutter_chat/utils/app_constants.dart';
 import 'package:image_picker/image_picker.dart';
 
 class Chat extends StatelessWidget {
-  final String peerId;
-  final String peerName;
-  final String avatarUrl;
+  final User peer;
 
-  Chat(
-      {Key key,
-      @required this.peerId,
-      @required this.peerName,
-      @required this.avatarUrl})
-      : super(key: key);
+  Chat({Key key, @required this.peer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          peerName,
+          peer.name,
         ),
         elevation: 0.7,
       ),
       body: ChatScreen(
-        uidto: peerId,
-        peerName: peerName,
-        peerAvatarUrl: avatarUrl,
+        peer: peer,
       ),
       backgroundColor: Color(0xFFEEE7DE),
     );
@@ -40,18 +32,12 @@ class Chat extends StatelessWidget {
 }
 
 class ChatScreen extends StatefulWidget {
-  final String uidto;
-  final String peerName;
-  final String peerAvatarUrl;
+  final User peer;
 
-  ChatScreen(
-      {@required this.uidto,
-      @required this.peerName,
-      @required this.peerAvatarUrl});
+  ChatScreen({@required this.peer});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState(
-      uidto: uidto, peerName: peerName, peerAvatarUrl: peerAvatarUrl);
+  _ChatScreenState createState() => _ChatScreenState(peer: peer);
 }
 
 class _ChatScreenState extends State<ChatScreen> {
@@ -64,21 +50,14 @@ class _ChatScreenState extends State<ChatScreen> {
   var receiverBgColor = Color(0xFFE1FFC7);
   var uiBgColor = Color(0xFFEEE7DE);
 
-  final String uidto;
-  var uidFrom;
   var roomId;
-  var peerName;
-  var peerAvatarUrl;
-  var currentUserName;
-  var currentUserImgUrl;
-  var messageSnapshot;
+  User user;
+  User peer;
 
   SharedPrefsManager spManager;
+  var messageSnapshot;
 
-  _ChatScreenState(
-      {@required this.uidto,
-      @required this.peerName,
-      @required this.peerAvatarUrl});
+  _ChatScreenState({@required this.peer});
 
   bool isShowSticker = false;
 
@@ -87,21 +66,14 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
 
     spManager = SharedPrefsManager();
-    spManager.getUser().then((user) {
-      uidFrom = user.uid;
-      currentUserName = user.name;
-      currentUserImgUrl = user.imageUrl;
-
-      roomId = _getRoomId(uidFrom, uidto);
-
-      print("uidFrom: " + uidFrom);
-      print("uidTo: " + uidto);
-      print("roomId: " + roomId);
-      print("currentUserName: " + currentUserName);
-      print("peerName: " + peerName);
-
+    spManager.getUser().then((userValue) {
       setState(() {
+        user = userValue;
+        roomId = _getRoomId(user.uid, peer.uid);
         messageSnapshot = NetworkService().getMessages(roomId);
+
+        print("user: " + user.name);
+        print("peer: " + peer.name);
       });
     }).catchError((e) {
       print(e);
@@ -163,14 +135,8 @@ class _ChatScreenState extends State<ChatScreen> {
         .collection(AppConstants.CHATROOMCOLLECTION_REF)
         .document(roomId)
         .setData({
-      "participents": FieldValue.arrayUnion([
-        uidFrom,
-        currentUserName,
-        currentUserImgUrl,
-        uidto,
-        peerName,
-        peerAvatarUrl
-      ]),
+      "participents": FieldValue.arrayUnion([user.toJson(), peer.toJson()]),
+      "uids": FieldValue.arrayUnion([user.uid, peer.uid]),
       "lastmsg": msg,
       "timestamp": FieldValue.serverTimestamp()
     }).then((_) {
@@ -189,9 +155,6 @@ class _ChatScreenState extends State<ChatScreen> {
       "timestamp": FieldValue.serverTimestamp()
     }).then((_) {
       print("chat room updated");
-      setState(() {
-        editingController.text = "";
-      });
     }).catchError((e) {
       print(e);
     });
@@ -204,8 +167,8 @@ class _ChatScreenState extends State<ChatScreen> {
         .document()
         .setData({
       "roomid": roomId,
-      "sender": uidFrom,
-      "receiver": uidto,
+      "sender": user.uid,
+      "receiver": peer.uid,
       "message": msg,
       "type": type,
       "timestamp": FieldValue.serverTimestamp()
@@ -236,7 +199,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget buildItem(bool isLastItem, document) {
-    if (document["sender"] == uidFrom) {
+    if (document["sender"] == user.uid) {
       return Row(
         children: <Widget>[
           document["type"] == 0
@@ -436,6 +399,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   color: Theme.of(context).primaryColor,
                   onPressed: () {
                     _sendMessage(editingController.text, 0);
+                    setState(() {
+                      editingController.text = "";
+                    });
                   }),
               color: Colors.white,
             ),

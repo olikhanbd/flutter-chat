@@ -25,7 +25,7 @@ class NetworkService {
   getChatRooms(String uid) {
     return Firestore.instance
         .collection(AppConstants.CHATROOMCOLLECTION_REF)
-        .where("participents", arrayContains: uid)
+        .where("uids", arrayContains: uid)
         .orderBy("timestamp", descending: true)
         .snapshots();
   }

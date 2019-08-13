@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/models/user.dart';
 import 'package:flutter_chat/services/network_service.dart';
 import 'package:flutter_chat/services/shared_prefs_manager.dart';
 import 'package:intl/intl.dart';
@@ -50,8 +51,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Widget buildItem(context, document) {
-    print("doc: timestamp   ${document.data["timestamp"]}");
-    print("doc: lastmsg ${document.data["lastmsg"]}");
+    User peer1 =
+        User.fromJson(document.data["participents"][0].cast<String, dynamic>());
+    User peer2 =
+        User.fromJson(document.data["participents"][1].cast<String, dynamic>());
+
     return (document.data != null)
         ? Column(
             children: <Widget>[
@@ -59,10 +63,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 height: 10.0,
               ),
               ListTile(
-                leading: (document.data["participents"][0] == user.uid)
+                leading: (peer1.uid == user.uid)
                     ? ClipOval(
                         child: CachedNetworkImage(
-                          imageUrl: document.data["participents"][5] ?? "",
+                          imageUrl: peer2.imageUrl ?? "",
                           placeholder: (context, url) => Image.asset(
                             placeholderImage,
                             fit: BoxFit.cover,
@@ -75,7 +79,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       )
                     : ClipOval(
                         child: CachedNetworkImage(
-                          imageUrl: document.data["participents"][2] ?? "",
+                          imageUrl: peer1.imageUrl ?? "",
                           placeholder: (context, url) => Image.asset(
                             placeholderImage,
                             fit: BoxFit.cover,
@@ -90,9 +94,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
-                      (document.data["participents"][0] == user.uid)
-                          ? document.data["participents"][4]
-                          : document.data["participents"][1],
+                      (peer1.uid == user.uid) ? peer2.name : peer1.name,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
@@ -114,16 +116,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   ),
                 ),
                 onTap: () {
-                  var id = (document.data["participents"][0] == user.uid)
-                      ? document.data["participents"][3]
-                      : document.data["participents"][0];
-                  var name = (document.data["participents"][0] == user.uid)
-                      ? document.data["participents"][4]
-                      : document.data["participents"][1];
-                  var imageUrl = (document.data["participents"][0] == user.uid)
-                      ? document.data["participents"][5]
-                      : document.data["participents"][2];
-                  navigateToChat(context, id, name, imageUrl);
+                  var peer = (peer1.uid == user.uid) ? peer2 : peer1;
+                  navigateToChat(context, peer);
                 },
               )
             ],
@@ -131,10 +125,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
         : Container();
   }
 
-  void navigateToChat(
-      BuildContext context, String peerId, String peerName, String avatarUrl) {
+  void navigateToChat(BuildContext context, User user) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return Chat(peerId: peerId, peerName: peerName, avatarUrl: avatarUrl);
+      return Chat(peer: user);
     }));
   }
 }
