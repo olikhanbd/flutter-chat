@@ -5,8 +5,8 @@ import 'package:flutter_chat/services/shared_prefs_manager.dart';
 import 'package:flutter_chat/utils/app_constants.dart';
 
 import 'auth_screen.dart';
-import 'camera_screen.dart';
 import 'chatlist_screen.dart';
+import 'profile_screen.dart';
 
 class FlutterChatHome extends StatefulWidget {
   @override
@@ -26,7 +26,7 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
     spManager.getUser().then((user) {
       if (user != null) {
         setState(() {
-          imgUrl = user.imageUrl;
+          if (user.imageUrl != null) imgUrl = user.imageUrl;
         });
       }
     }).catchError((e) {
@@ -52,16 +52,12 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
                 icon: ClipOval(
                   child: CachedNetworkImage(
                     imageUrl: imgUrl,
-                    placeholder: (context, url) => Image.asset(
-                      placeHolder,
-                      fit: BoxFit.cover,
-                    ),
-                    errorWidget: (context, url, error) => CircleAvatar(
-                      child: Image.asset(
-                        placeHolder,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                    placeholder: (context, url) => Icon(
+                        Icons.account_circle,
+                    color: Colors.white,),
+                    errorWidget: (context, url, error) => Icon(
+                      Icons.account_circle,
+                      color: Colors.white,),
                   ),
                 ),
               ),
@@ -88,13 +84,13 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          CameraScreen(),
+          ProfileScreen(),
           ChatListScreen(),
           UsersScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-          backgroundColor: Theme.of(context).accentColor,
+          backgroundColor: Theme.of(context).primaryColor,
           child: Icon(
             Icons.message,
             color: Colors.white,

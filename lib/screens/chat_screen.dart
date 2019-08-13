@@ -188,7 +188,10 @@ class _ChatScreenState extends State<ChatScreen> {
       "lastmsg": msg,
       "timestamp": FieldValue.serverTimestamp()
     }).then((_) {
-      print("chat room created");
+      print("chat room updated");
+      setState(() {
+        editingController.text = "";
+      });
     }).catchError((e) {
       print(e);
     });
