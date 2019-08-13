@@ -64,7 +64,7 @@ class _FlutterChatHomeState extends State<FlutterChatHome>
               Tab(
                 text: "CHATS",
               ),
-              Tab(text: "USERS"),
+              Tab(text: "ACCOUNTS"),
             ]),
         actions: <Widget>[
           Icon(Icons.search),
